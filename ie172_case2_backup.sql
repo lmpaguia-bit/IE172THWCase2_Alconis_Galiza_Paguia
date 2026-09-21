@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 8x6uYNaTqTKczZdISr2mDe6PQTcp0pFaO7a45LToYbUZUzWi3UF35MbGnCp8onQ
+\restrict q2jHHx3hUSFyxebM9FVyzoRu55Rh0XFp0WWaJAIpt3X8i6UZuAnppPDI8q8hmzW
 
 -- Dumped from database version 18.6 (Homebrew)
 -- Dumped by pg_dump version 18.4
 
--- Started on 2026-09-21 22:44:10 PST
+-- Started on 2026-09-21 23:16:59 PST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -139,10 +139,12 @@ INSERT INTO public.genres VALUES (3, 'Horror', '2024-10-02 18:48:26.277931', fal
 -- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: loey
 --
 
-INSERT INTO public.movies VALUES (2, 'Forgotten Island', 2, '2026-09-16', false);
-INSERT INTO public.movies VALUES (4, 'La La Land', 2, '2026-09-08', false);
-INSERT INTO public.movies VALUES (3, 'Shutter Island', 2, '1978-09-16', false);
-INSERT INTO public.movies VALUES (1, 'spiderman', 1, '2026-09-08', false);
+INSERT INTO public.movies VALUES (2, 'Die hard', 1, '1988-07-12', false);
+INSERT INTO public.movies VALUES (4, 'La La Land', 2, '2016-12-09', false);
+INSERT INTO public.movies VALUES (1, 'Spider-Man: Brand New Day', 1, '2026-07-31', false);
+INSERT INTO public.movies VALUES (3, 'Shake, Rattle & Roll', 3, '1984-12-25', false);
+INSERT INTO public.movies VALUES (5, 'The Devil Wears Prada ', 2, '2006-06-30', false);
+INSERT INTO public.movies VALUES (6, 'Sadako', 3, '2019-05-24', false);
 
 
 --
@@ -160,7 +162,7 @@ SELECT pg_catalog.setval('public.genres_genre_id_seq', 3, true);
 -- Name: movies_movie_id_seq; Type: SEQUENCE SET; Schema: public; Owner: loey
 --
 
-SELECT pg_catalog.setval('public.movies_movie_id_seq', 4, true);
+SELECT pg_catalog.setval('public.movies_movie_id_seq', 6, true);
 
 
 --
@@ -190,11 +192,11 @@ ALTER TABLE ONLY public.movies
     ADD CONSTRAINT movies_genre_id_fkey FOREIGN KEY (genre_id) REFERENCES public.genres(genre_id);
 
 
--- Completed on 2026-09-21 22:44:10 PST
+-- Completed on 2026-09-21 23:16:59 PST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 8x6uYNaTqTKczZdISr2mDe6PQTcp0pFaO7a45LToYbUZUzWi3UF35MbGnCp8onQ
+\unrestrict q2jHHx3hUSFyxebM9FVyzoRu55Rh0XFp0WWaJAIpt3X8i6UZuAnppPDI8q8hmzW
 
