@@ -10,6 +10,8 @@ from app import app
 from apps import commonmodules as cm
 from apps import home
 from apps.movies import movie_management, movie_management_profile
+from apps.genres import genre_management, genre_management_profile
+
 
 app.layout = html.Div(
     [
@@ -23,6 +25,7 @@ app.layout = html.Div(
     ]
 )
 
+
 @app.callback(
     [
         Output('page_content', 'children')
@@ -31,36 +34,50 @@ app.layout = html.Div(
         Input('url', 'pathname')
     ]
 )
-def displaypage (pathname):
+def displaypage(pathname):
     
     # This code block extracts the id of the triggered input
     ctx = dash.callback_context
+    
     if ctx.triggered:
-        eventid = ctx.triggered[0]['prop_id'].split('.')[0]   
+        eventid = ctx.triggered[0]['prop_id'].split('.')[0]
     else:
         raise PreventUpdate
 
-        
     # This code block executes action based on the value of eventid
     if eventid == 'url':
+        
         if pathname == '/' or pathname == '/home':
             returnlayout = home.layout
-            
+
+        # Movies Management
         elif pathname == '/movies/movie_management':
             returnlayout = movie_management.layout
-            
+
         elif pathname == '/movies/movie_management_profile':
             returnlayout = movie_management_profile.layout
-            
+
+        # Genres Management
+        elif pathname == '/genres' or pathname == '/genres/genre_management':
+            returnlayout = genre_management.layout
+
+        elif pathname == '/genres/genre_management_profile':
+            returnlayout = genre_management_profile.layout
+
         else:
             returnlayout = 'error404'
-    
-    else: 
+
+    else:
         raise PreventUpdate
-    
+
     return [returnlayout]
-    
+
 
 if __name__ == '__main__':
-    webbrowser.open('http://127.0.0.1:8050/', new=0, autoraise=True)
+    webbrowser.open(
+        'http://127.0.0.1:8050/',
+        new=0,
+        autoraise=True
+    )
+    
     app.run(debug=False)
