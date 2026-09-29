@@ -93,7 +93,10 @@ layout = html.Div(
 )
 
 
-# Change Submit button when record is marked for deletion
+# =========================================================
+# CHANGE SUBMIT BUTTON IF DELETE IS CHECKED
+# =========================================================
+
 @app.callback(
     [
         Output('genreprofile_submit', 'color'),
@@ -111,17 +114,18 @@ def update_submit_button(delete_val):
     return 'primary', 'Submit'
 
 
-# Determine whether page is in Add or Edit mode
+# =========================================================
+# DETERMINE ADD MODE OR EDIT MODE
+# =========================================================
+
 @app.callback(
     [
         Output('genreprofile_genreid', 'data'),
         Output('genreprofile_deletediv', 'className')
     ],
     [
-        Input('url', 'pathname')
-    ],
-    [
-        State('url', 'search')
+        Input('url', 'pathname'),
+        Input('url', 'search')
     ]
 )
 def genreprofile_initialize(pathname, urlsearch):
@@ -134,18 +138,26 @@ def genreprofile_initialize(pathname, urlsearch):
 
     create_mode = query_dict.get('mode', ['add'])[0]
 
+    # ADD MODE
     if create_mode == 'add':
         genreid = 0
         deletediv = 'd-none'
 
+    # EDIT MODE
     else:
-        genreid = int(query_dict.get('id', [0])[0])
+        genreid = int(
+            query_dict.get('id', [0])[0]
+        )
+
         deletediv = ''
 
     return genreid, deletediv
 
 
-# Save / Update / Delete Genre
+# =========================================================
+# SAVE / UPDATE / DELETE GENRE
+# =========================================================
+
 @app.callback(
     [
         Output('genreprofile_alert', 'color'),
@@ -173,6 +185,7 @@ def genreprofile_saveprofile(
     deleteind
 ):
 
+    # Make sure Submit button actually triggered callback
     if (
         not ctx.triggered_id
         or ctx.triggered_id != 'genreprofile_submit'
@@ -185,19 +198,28 @@ def genreprofile_saveprofile(
     alert_color = ''
     alert_text = ''
 
+    # Get mode from URL
     parsed = urlparse(urlsearch or '')
-    create_mode = parse_qs(parsed.query).get(
+
+    create_mode = parse_qs(
+        parsed.query
+    ).get(
         'mode',
         ['add']
     )[0]
 
-    modal_header_text = (
-        'Save Success'
-        if create_mode == 'add'
-        else 'Update Success'
-    )
+    # Modal header
+    if create_mode == 'add':
+        modal_header_text = 'Save Success'
 
+    else:
+        modal_header_text = 'Update Success'
+
+
+    # =====================================================
     # DELETE
+    # =====================================================
+
     if deleteind and 1 in deleteind:
 
         sql = """
@@ -206,7 +228,10 @@ def genreprofile_saveprofile(
             WHERE genre_id = %s
         """
 
-        modifyDB(sql, [genreid])
+        modifyDB(
+            sql,
+            [genreid]
+        )
 
         modal_open = True
         modal_header_text = 'Delete Success'
@@ -219,33 +244,80 @@ def genreprofile_saveprofile(
             modal_header_text
         ]
 
-    # VALIDATION
+
+    # =====================================================
+    # VALIDATION - EMPTY GENRE
+    # =====================================================
+
     if not genre_name:
 
         alert_open = True
         alert_color = 'danger'
+
         alert_text = (
             'Check your inputs. '
             'Please supply the genre name.'
         )
 
-    # ADD
+
+    # =====================================================
+    # ADD MODE
+    # =====================================================
+
     elif create_mode == 'add':
 
+        # Check if genre already exists
         sql = """
-            INSERT INTO genres
-                (genre_name, genre_delete_ind)
-            VALUES (%s, %s)
+            SELECT genre_id
+            FROM genres
+            WHERE LOWER(genre_name) = LOWER(%s)
+            AND NOT genre_delete_ind
         """
 
-        modifyDB(
+        df = getDataFromDB(
             sql,
-            [genre_name, False]
+            [genre_name],
+            ['genreid']
         )
 
-        modal_open = True
+        # Duplicate genre found
+        if not df.empty:
 
-    # EDIT
+            alert_open = True
+            alert_color = 'danger'
+
+            alert_text = (
+                'Genre already exists. '
+                'Please enter a different genre name.'
+            )
+
+        # No duplicate -> insert genre
+        else:
+
+            sql = """
+                INSERT INTO genres
+                    (
+                        genre_name,
+                        genre_delete_ind
+                    )
+                VALUES (%s, %s)
+            """
+
+            modifyDB(
+                sql,
+                [
+                    genre_name,
+                    False
+                ]
+            )
+
+            modal_open = True
+
+
+    # =====================================================
+    # EDIT MODE
+    # =====================================================
+
     else:
 
         sql = """
@@ -256,10 +328,14 @@ def genreprofile_saveprofile(
 
         modifyDB(
             sql,
-            [genre_name, genreid]
+            [
+                genre_name,
+                genreid
+            ]
         )
 
         modal_open = True
+
 
     return [
         alert_color,
@@ -270,13 +346,15 @@ def genreprofile_saveprofile(
     ]
 
 
-# Load existing genre when in Edit Mode
+# =========================================================
+# LOAD EXISTING GENRE IN EDIT MODE
+# =========================================================
+
 @app.callback(
     Output('genreprofile_name', 'value'),
-    Input('genreprofile_genreid', 'modified_timestamp'),
-    State('genreprofile_genreid', 'data')
+    Input('genreprofile_genreid', 'data')
 )
-def genreprofile_loadprofile(timestamp, genreid):
+def genreprofile_loadprofile(genreid):
 
     if genreid:
 
@@ -293,6 +371,6 @@ def genreprofile_loadprofile(timestamp, genreid):
         )
 
         if not df.empty:
-            return df['genrename'][0]
+            return df['genrename'].iloc[0]
 
     raise PreventUpdate

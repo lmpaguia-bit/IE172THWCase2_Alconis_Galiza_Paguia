@@ -56,7 +56,11 @@ layout = html.Div(
 )
 def updateRecordsTable(pathname):
 
-    if pathname != '/genres/genre_management':
+    # Allow both routes
+    if pathname not in [
+        '/genres',
+        '/genres/genre_management'
+    ]:
         raise PreventUpdate
 
     sql = """
@@ -85,7 +89,7 @@ def updateRecordsTable(pathname):
         for idx, row in df.iterrows()
     ]
 
-    # Do not display genre_id
+    # Hide genre_id from table
     df = df[['Genre', 'Action']]
 
     genre_table = dbc.Table.from_dataframe(
