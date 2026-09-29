@@ -215,21 +215,52 @@ def movieprofile_saveprofile(submitbtn, title, genre, releasedate, urlsearch, mo
         alert_open = True
         alert_color = 'danger'
         alert_text = 'Check your inputs. Please supply the movie title.'
+        return [alert_color, alert_text, alert_open, modal_open, modal_header_text]  #NEW: early return on validation failure
     elif not genre:
         alert_open = True
         alert_color = 'danger'
         alert_text = 'Check your inputs. Please supply the movie genre.'
+        return [alert_color, alert_text, alert_open, modal_open, modal_header_text]  #NEW: early return on validation failure
     elif not releasedate:
         alert_open = True
         alert_color = 'danger'
         alert_text = 'Check your inputs. Please supply the movie release date.'
+        return [alert_color, alert_text, alert_open, modal_open, modal_header_text]  #NEW: early return on validation failure
+    
+    cleaned_title = title.strip()
+    
+    if create_mode == 'add':
+        dup_sql = """
+            SELECT movie_id 
+            FROM movies 
+            WHERE LOWER(movie_name) = LOWER(%s) 
+              AND movie_delete_ind = False
+        """
+        dup_df = getDataFromDB(dup_sql, [cleaned_title], ['movie_id'])
+    else:
+        # If updating, exclude the current record from the duplicate check
+        dup_sql = """
+            SELECT movie_id 
+            FROM movies 
+            WHERE LOWER(movie_name) = LOWER(%s) 
+              AND movie_id != %s 
+              AND movie_delete_ind = False
+        """
+        dup_df = getDataFromDB(dup_sql, [cleaned_title, movieid], ['movie_id'])
+
+    if not dup_df.empty:
+        alert_open = True
+        alert_color = 'danger'
+        alert_text = f'A movie titled "{cleaned_title}" already exists in the system.'
+        return [alert_color, alert_text, alert_open, modal_open, modal_header_text]
+    
     else:
         if create_mode == 'add':
             sql = '''
                 INSERT INTO movies (movie_name, genre_id, movie_release_date, movie_delete_ind)
                 VALUES (%s, %s, %s, %s)
             '''
-            values = [title, genre, releasedate, False]
+            values = [cleaned_title, genre, releasedate, False]
         else:
             sql = '''
                 UPDATE movies 
@@ -240,12 +271,12 @@ def movieprofile_saveprofile(submitbtn, title, genre, releasedate, urlsearch, mo
                 WHERE
                     movie_id = %s
             '''
-            values = [title, genre, releasedate, movieid]
+            values = [cleaned_title, genre, releasedate, movieid]
 
         modifyDB(sql, values)
         modal_open = True
 
-    return [alert_color, alert_text, alert_open, modal_open, modal_header_text]  #NEW: updated return list to include modal header text
+    return [alert_color, alert_text, alert_open, modal_open, modal_header_text]  
 
 
 @app.callback(
