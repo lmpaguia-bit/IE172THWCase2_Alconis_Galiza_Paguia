@@ -11,6 +11,7 @@ from apps import commonmodules as cm
 from apps import home
 from apps.movies import movie_management, movie_management_profile
 from apps.genres import genre_management, genre_management_profile
+from apps.reports import report
 
 
 app.layout = html.Div(
@@ -63,6 +64,10 @@ def displaypage(pathname):
 
         elif pathname == '/genres/genre_management_profile':
             returnlayout = genre_management_profile.layout
+
+        # Reports
+        elif pathname == '/reports/report':
+            returnlayout = report.layout
 
         else:
             returnlayout = 'error404'
